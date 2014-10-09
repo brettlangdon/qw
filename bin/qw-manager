@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+import logging
+import os
+import signal
+
+import docopt
+
+from qw.manager import Manager
+from qw import logging_setup
+from qw import __version__
+
+
+__doc__ = """Usage:
+  qw-manager [--level=<log-level>] [--workers=<num-workers>] [--name=<name>] [--host=<host>] [--port=<port>] [--db=<db>]
+  qw-manager (--help | --version)
+
+Options:
+  --help                       Show this help message
+  --version                    Show version information
+  -l --level=<log-level>       Set the log level (debug,info,warn,error) [default: info]
+  -w --workers=<num-workers>   Set the number of workers to start, defaults to number of cpus
+  -n --name=<name>             Set the manager name, defaults to hostname
+  -h --host=<host>             Set the redis host to use [default: localhost]
+  -p --port=<port>             Set the redis port to use [default: 6379]
+  -d --db=<db>                 Set the redis db number to use [default: 0]
+"""
+
+arguments = docopt.docopt(__doc__, version="qw-manager %s" % (__version__, ))
+
+log_level = arguments["--level"].upper()
+
+logging_setup.manager_logger.setLevel(log_level)
+logging_setup.worker_logger.setLevel(log_level)
+
+manager = Manager(
+    name=arguments["--name"], num_workers=arguments["--workers"],
+    host=arguments["--host"], port=arguments["--port"], db=arguments["--db"]
+)
+
+manager.start()
+
+def stop_handler(signum, frame):
+    manager.stop()
+
+def info_handler(signum, frame):
+    print "All Queued Jobs:"
+    for job in manager.get_all_queued_jobs():
+        print job
+
+    print "Current Pending Jobs:"
+    for worker, job in manager.get_worker_pending_jobs():
+        print "%s: %s" % (worker, job)
+
+signal.signal(signal.SIGTERM, stop_handler)
+signal.signal(signal.SIGHUP, stop_handler)
+signal.signal(signal.SIGINT, info_handler)
+
+try:
+    manager.join()
+except KeyboardInterrupt:
+    manager.stop()
