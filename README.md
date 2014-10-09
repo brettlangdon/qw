@@ -38,6 +38,10 @@ manager = Manager('__main__.target')
 ### Queues
 There are a few different queues that are used. The job queues are just redis lists, manager/worker lists are sets and jobs are hashes.
 
+A worker picks up a job from either `all:jobs`, `<manager>:jobs` or `<worker>:jobs`, pulls the corresponding `job:<job_id>` key and
+processes it with the provided `target`, after processing it will then remove the `job:<job_id>` key as well as the job id from
+the `<worker>:jobs` queue.
+
 * `all:managers` - a set of all managers
 * `all:jobs` - a queue that all workers can pull jobs from, the values are just the job ids
 * `job:<job_id>` - a hash of the job data
