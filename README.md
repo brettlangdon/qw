@@ -72,3 +72,44 @@ manager.join()
 * `__init__(self, client, target, manager_name=None, timeout=10)`
 * `run(self)`
 * `shutdown(self)`
+
+## CLI Tools
+### qw-manager
+The `qw-manager` tool is used to start a new manager process with the provided `target` string, which gets run
+for every job processed by a worker.
+```
+$ qw-manager --help
+Usage:
+  qw-manager [--level=<log-level>] [--workers=<num-workers>] [--name=<name>] [--host=<host>] [--port=<port>] [--db=<db>] <target>
+  qw-manager (--help | --version)
+
+Options:
+  --help                       Show this help message
+  --version                    Show version information
+  -l --level=<log-level>       Set the log level (debug,info,warn,error) [default: info]
+  -w --workers=<num-workers>   Set the number of workers to start, defaults to number of cpus
+  -n --name=<name>             Set the manager name, defaults to hostname
+  -h --host=<host>             Set the redis host to use [default: localhost]
+  -p --port=<port>             Set the redis port to use [default: 6379]
+  -d --db=<db>                 Set the redis db number to use [default: 0]
+```
+### qw-client
+The `qw-client` command is useful to look at basic stats of running managers, workers and job queues
+as well as to push json data in the form of a string or a file to the main queue or a manager specific queue.
+```
+$ qw-client --help
+Usage:
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] managers
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] workers [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] jobs [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] queue string <data> [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] queue file <file> [<manager>]
+  qw-client (--help | --version)
+
+Options:
+  --help                       Show this help message
+  --version                    Show version information
+  -h --host=<host>             Set the redis host to use [default: localhost]
+  -p --port=<port>             Set the redis port to use [default: 6379]
+  -d --db=<db>                 Set the redis db number to use [default: 0]
+```
