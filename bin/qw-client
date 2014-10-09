@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+import logging
+import json
+import os
+import signal
+
+import docopt
+
+from qw.client import Client
+from qw import __version__
+
+
+__doc__ = """Usage:
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] managers
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] workers [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] jobs [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] queue string <data> [<manager>]
+  qw-client [--host=<host>] [--port=<port>] [--db=<db>] queue file <file> [<manager>]
+  qw-client (--help | --version)
+
+Options:
+  --help                       Show this help message
+  --version                    Show version information
+  -h --host=<host>             Set the redis host to use [default: localhost]
+  -p --port=<port>             Set the redis port to use [default: 6379]
+  -d --db=<db>                 Set the redis db number to use [default: 0]
+"""
+
+arguments = docopt.docopt(__doc__, version="qw-manager %s" % (__version__, ))
+client = Client(host=arguments["--host"], port=arguments["--port"], db=arguments["--db"])
+
+if arguments["managers"]:
+    print "All Managers:"
+    for manager in client.get_all_managers():
+         print "\t%s" % (manager, )
+
+elif arguments["workers"]:
+    managers = []
+    if arguments["<manager>"]:
+        managers = [arguments["<manager>"]]
+    else:
+        managers = client.get_all_managers()
+    for manager in managers:
+        print "%s Workers:" % (manager, )
+        for worker in client.get_manager_workers(manager):
+            print "\t%s" % (worker, )
+
+elif arguments["jobs"]:
+    managers = []
+    if arguments["<manager>"]:
+        managers = [arguments["<manager>"]]
+    else:
+        managers = client.get_all_managers()
+
+    for manager in managers:
+        print "%s:" % (manager, )
+        print "\tQueued Jobs:"
+        for job_id in client.get_manager_queued_jobs(manager):
+            print "\t  %s" % (job_id, )
+        print "\tPending Jobs:"
+        for worker in client.get_manager_workers(manager):
+            for job_id in client.get_worker_pending_jobs(worker):
+                print "\t  %s - %s" % (worker, job_id)
+
+elif arguments["queue"]:
+    data = arguments["<data>"]
+    if arguments["file"]:
+        with open(arguments["<file>"]) as fp:
+            data = fp.read()
+    data = json.loads(data)
+    job_id = client.queue_job(data, manager=arguments["<manager>"])
+    print "Queued Job: %s" % (job_id, )
