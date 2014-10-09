@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup, findpackages
+from setuptools import setup, find_packages
 
 from qw import __version__
 
@@ -11,7 +11,7 @@ setup(
     author="Brett Langdon",
     author_email="brett@blangdon.com",
     url="https://github.com/brettlangdon/qw",
-    packages=findpackages(),
+    packages=find_packages(),
     license="MIT",
     classifiers=[
         "Intended Audience :: Developers",
