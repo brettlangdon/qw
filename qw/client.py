@@ -60,10 +60,10 @@ class Client(redis.StrictRedis):
         self.lrem(self.WORKER_JOBS % (worker_name, ), 1, job_id)
 
     def get_all_managers(self):
-        return self.lrange(self.ALL_MANAGERS, 0, -1)
+        return self.smembers(self.ALL_MANAGERS)
 
     def get_manager_workers(self, manager_name):
-        return self.lrange(self.MANAGER_WORKERS % (manager_name, ), 0, -1)
+        return self.smembers(self.MANAGER_WORKERS % (manager_name, ))
 
     def get_worker_pending_jobs(self, worker_name):
         for job_id in self.lrange(self.WORKER_JOBS % (worker_name, ), 0, -1):
