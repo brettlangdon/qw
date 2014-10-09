@@ -17,7 +17,7 @@ class Client(redis.StrictRedis):
     def register_manager(self, name):
         self.sadd(self.ALL_MANAGERS, name)
 
-    def deregister_manager(self, name):
+    def deregister_manager(self, name)    :
         self.srem(self.ALL_MANAGERS, name)
 
     def register_worker(self, manager, name):
@@ -45,7 +45,7 @@ class Client(redis.StrictRedis):
         #  3) try to grab a job from the pool of all jobs
         job_id = (
             self.lpop(self.WORKER_JOBS % (worker, )) or
-            self.brpoplpush(self.MANAGER_JOBS % (manager, ), self.WORKER_JOBS % (worker, ), timeout=timeout) or
+            self.brpoplpush(self.MANAGER_JOBS % (manager, ), self.WORKER_JOBS % (worker, )) or
             self.brpoplpush(self.ALL_JOBS, self.WORKER_JOBS % (worker, ), timeout=timeout)
         )
 
