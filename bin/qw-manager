@@ -43,18 +43,8 @@ manager.start()
 def stop_handler(signum, frame):
     manager.stop()
 
-def info_handler(signum, frame):
-    print "All Queued Jobs:"
-    for job in manager.get_all_queued_jobs():
-        print job
-
-    print "Current Pending Jobs:"
-    for worker, job in manager.get_worker_pending_jobs():
-        print "%s: %s" % (worker, job)
-
 signal.signal(signal.SIGTERM, stop_handler)
 signal.signal(signal.SIGHUP, stop_handler)
-signal.signal(signal.SIGINT, info_handler)
 
 try:
     manager.join()
