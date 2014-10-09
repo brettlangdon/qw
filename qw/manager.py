@@ -8,14 +8,15 @@ from qw.worker import Worker
 
 
 class Manager(object):
-    __slots__ = ["workers", "client", "num_workers", "log", "name"]
+    __slots__ = ["workers", "client", "num_workers", "log", "name", "target"]
 
-    def __init__(self, host="localhost", port=6379, db=0, num_workers=None, name=None):
+    def __init__(self, target, host="localhost", port=6379, db=0, num_workers=None, name=None):
         self.workers = []
         self.num_workers = num_workers or multiprocessing.cpu_count()
         self.client = Client(host=host, port=port, db=db)
         self.log = logging.getLogger("qw.manager")
         self.name = name or socket.gethostname()
+        self.target = target
 
     def start(self):
         self.log.info("starting", extra={"process_name": self.name})
@@ -24,7 +25,7 @@ class Manager(object):
 
         self.log.info("starting %s workers", self.num_workers, extra={"process_name": self.name})
         for _ in xrange(self.num_workers):
-            worker = Worker(self.client, manager_name=self.name)
+            worker = Worker(self.client, self.target, manager_name=self.name)
             worker.start()
             self.workers.append(worker)
         self.log.info("registering %s", self.name, extra={"process_name": self.name})

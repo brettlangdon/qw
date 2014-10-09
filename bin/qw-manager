@@ -12,7 +12,7 @@ from qw import __version__
 
 
 __doc__ = """Usage:
-  qw-manager [--level=<log-level>] [--workers=<num-workers>] [--name=<name>] [--host=<host>] [--port=<port>] [--db=<db>]
+  qw-manager [--level=<log-level>] [--workers=<num-workers>] [--name=<name>] [--host=<host>] [--port=<port>] [--db=<db>] <target>
   qw-manager (--help | --version)
 
 Options:
@@ -34,7 +34,7 @@ logging_setup.manager_logger.setLevel(log_level)
 logging_setup.worker_logger.setLevel(log_level)
 
 manager = Manager(
-    name=arguments["--name"], num_workers=arguments["--workers"],
+    arguments["<target>"], name=arguments["--name"], num_workers=arguments["--workers"],
     host=arguments["--host"], port=arguments["--port"], db=arguments["--db"]
 )
 

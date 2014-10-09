@@ -1,23 +1,25 @@
 import logging
 import multiprocessing
-import time
 import traceback
 import socket
 import os
 
+from qw.utils import dynamic_import
+
 
 class Worker(multiprocessing.Process):
     __slots__ = [
-        "client", "exit", "log", "timeout", "manager_name"
+        "client", "exit", "log", "timeout", "manager_name", "target"
     ]
 
-    def __init__(self, client, manager_name=None, timeout=10):
+    def __init__(self, client, target, manager_name=None, timeout=10):
         super(Worker, self).__init__()
         self.client = client
         self.manager_name = manager_name or socket.gethostname()
         self.exit = multiprocessing.Event()
         self.timeout = timeout
         self.log = logging.getLogger("qw.worker")
+        self.target = target
 
     @property
     def name(self):
@@ -53,18 +55,15 @@ class Worker(multiprocessing.Process):
             "processing job id (%s) data (%r)" % (job_id, job_data), extra={"process_name": self.name}
         )
         if job_data:
-            self._process(job_id, job_data)
+            self.target(job_id, job_data)
 
         self.log.debug("removing job id (%s)" % (job_id), extra={"process_name": self.name})
         self.client.finish_job(job_id, self.name)
 
-    def _process(self, job_id, job_data):
-        print "%s - %s" % (job_id, job_data)
-        time.sleep(20)
-        print "done"
-
     def run(self):
         self.log.info("starting", extra={"process_name": self.name})
+        if isinstance(self.target, basestring):
+            self.target = dynamic_import(self.target)
         self._register()
         while not self.exit.is_set():
             try:
