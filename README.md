@@ -73,6 +73,22 @@ manager.join()
 * `run(self)`
 * `shutdown(self)`
 
+### Client(redis.StrictRedi)
+* `__init__(self, host="localhost", port=6379, db=0)`
+* `register_manager(self, name)`
+* `deregister_manager(self, name)`
+* `register_worker(self, manager, name)`
+* `deregister_worker(self, manager, name)`
+* `queue_job(self, job_data, manager=None, worker=None)`
+* `fetch_next_job(self, manager, worker, timeout=10)`
+* `finish_job(self, job_id, worker_name)`
+* `get_all_managers(self)`
+* `get_manager_workers(self, manager_name)`
+* `get_worker_pending_jobs(self, worker_name)`
+* `get_manager_queued_jobs(self, manager_name)`
+* `get_all_queued_jobs(self)`
+* `get_all_pending_jobs(self)`
+
 ## CLI Tools
 ### qw-manager
 The `qw-manager` tool is used to start a new manager process with the provided `target` string, which gets run
