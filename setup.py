@@ -13,6 +13,7 @@ setup(
     url="https://github.com/brettlangdon/qw",
     packages=find_packages(),
     license="MIT",
+    scripts=["bin/qw-manager", "bin/qw-client"],
     classifiers=[
         "Intended Audience :: Developers",
         "Programming Language :: Python",
