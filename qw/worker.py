@@ -5,17 +5,15 @@ import traceback
 import socket
 import os
 
-from qw import queue_name
-
 
 class Worker(multiprocessing.Process):
     __slots__ = [
-        "connection", "exit", "log", "timeout", "manager_name"
+        "client", "exit", "log", "timeout", "manager_name"
     ]
 
-    def __init__(self, redis_connection, manager_name=None, timeout=10):
+    def __init__(self, client, manager_name=None, timeout=10):
         super(Worker, self).__init__()
-        self.connection = redis_connection
+        self.client = client
         self.manager_name = manager_name or socket.gethostname()
         self.exit = multiprocessing.Event()
         self.timeout = timeout
@@ -34,36 +32,23 @@ class Worker(multiprocessing.Process):
             "registering worker %s under '%s:workers'" % (self.name, self.manager_name),
             extra={"process_name": self.name}
         )
-        # reigtser this process under the parent manager_name
-        self.connection.sadd("%s:workers" % (self.manager_name, ), self.name)
+        self.client.register_worker(self.manager_name, self.name)
 
     def _deregister(self):
         self.log.info(
             "deregistering worker %s from '%s:workers'" % (self.name, self.manager_name),
             extra={"process_name": self.name}
         )
-        self.connection.srem("%s:workers" % (self.manager_name, ), self.name)
+        self.client.deregister_worker(self.manager_name, self.name)
 
     def _run(self):
         # try to fetch a previously unfinished job
         # otherwise try to fetch from the main job pool
-        self.log.debug(
-            "polling for jobs from '%s' and '%s'" % (self.job_queue, queue_name.ALL_JOBS),
-            extra={"process_name": self.name}
-        )
-        job_id = (
-            self.connection.lpop(self.job_queue) or
-            self.connection.brpoplpush(queue_name.ALL_JOBS, self.job_queue, timeout=self.timeout)
-        )
-
-        if not job_id:
-            self.log.debug(
-                "no jobs found from '%s' or '%s'" % (self.job_queue, queue_name.ALL_JOBS),
-                extra={"process_name": self.name}
-            )
+        self.log.debug("polling for jobs", extra={"process_name": self.name})
+        job_id, job_data = self.client.fetch_next_job(self.manager_name, self.name, timeout=self.timeout)
+        if not job_id or not job_data:
             return
 
-        job_data = self.connection.hgetall("job:%s" % (job_id, ))
         self.log.debug(
             "processing job id (%s) data (%r)" % (job_id, job_data), extra={"process_name": self.name}
         )
@@ -71,8 +56,7 @@ class Worker(multiprocessing.Process):
             self._process(job_id, job_data)
 
         self.log.debug("removing job id (%s)" % (job_id), extra={"process_name": self.name})
-        self.connection.delete("job:%s" % (job_id, ))
-        self.connection.lrem(self.job_queue, 1, job_id)
+        self.client.finish_job(job_id, self.name)
 
     def _process(self, job_id, job_data):
         print "%s - %s" % (job_id, job_data)
