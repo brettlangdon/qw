@@ -14,6 +14,10 @@ setup(
     packages=find_packages(),
     license="MIT",
     scripts=["bin/qw-manager", "bin/qw-client"],
+    install_requires=[
+        "redis==2.10.3",
+        "docopt==0.6.2",
+    ],
     classifiers=[
         "Intended Audience :: Developers",
         "Programming Language :: Python",
