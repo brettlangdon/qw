@@ -45,7 +45,7 @@ class Client(redis.StrictRedis):
         #  3) try to grab a job from the pool of all jobs
         job_id = (
             self.lpop(self.WORKER_JOBS % (worker, )) or
-            self.brpoplpush(self.MANAGER_JOBS % (manager, ), self.WORKER_JOBS % (worker, )) or
+            self.rpoplpush(self.MANAGER_JOBS % (manager, ), self.WORKER_JOBS % (worker, )) or
             self.brpoplpush(self.ALL_JOBS, self.WORKER_JOBS % (worker, ), timeout=timeout)
         )
 
