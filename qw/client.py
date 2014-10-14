@@ -17,7 +17,7 @@ class Client(redis.StrictRedis):
     def register_manager(self, name):
         self.sadd(self.ALL_MANAGERS, name)
 
-    def deregister_manager(self, name)    :
+    def deregister_manager(self, name):
         self.srem(self.ALL_MANAGERS, name)
 
     def register_worker(self, manager, name):
