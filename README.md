@@ -49,6 +49,11 @@ the `<worker>:jobs` queue.
 * `<manager>:jobs` - a queue of jobs for a specific manager, workers will try to pull from here before `all:jobs`, the values are just the job ids
 * `<worker>:jobs` - a queue of jobs for a specific worker, this is meant as a in progress queue for each worker, the workers will pull jobs into this queue from either `<manager>:jobs` or `all:jobs`, the values are just the job ids
 
+### Results
+`qw` Workers make no assumptions about the result of processing each job. It does not place finished job into a queue or database
+or anything else. Once a job has been successfully processed by a Worker, that job is removed completely from queues and from redis.
+The worker itself must properly store the results into a finished queue or database if that is what is required.
+
 ## Basic Usage
 
 ```python
