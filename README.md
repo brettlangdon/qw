@@ -82,7 +82,7 @@ manager.join()
 * `run(self)`
 * `shutdown(self)`
 
-### Client(redis.StrictRedi)
+### Client(redis.StrictRedis)
 * `__init__(self, host="localhost", port=6379, db=0)`
 * `register_manager(self, name)`
 * `deregister_manager(self, name)`
