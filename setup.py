@@ -15,7 +15,7 @@ setup(
     license="MIT",
     scripts=["bin/qw-manager", "bin/qw-client"],
     install_requires=[
-        "redis==2.10.3",
+        "redis==4.4.4",
         "docopt==0.6.2",
     ],
     classifiers=[
